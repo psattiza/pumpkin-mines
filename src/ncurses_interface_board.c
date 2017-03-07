@@ -1,6 +1,7 @@
 
 
 #include "ncurses_interface.h"
+#include "ncurses_interface.h"
 
 void draw_mine_row(struct board_window *self, struct row *r);
 void draw_between_row(struct board_window *self);
@@ -15,15 +16,17 @@ void draw_board(struct board_window *self) {
 
     cursor->should_highlight = 1;
 
-    draw_top_row(self);
-
+    if(opts.border){
+        draw_top_row(self);
+    }
     for(r = self->board->rows;
             r < self->board->rows + (self->board->num_rows-1); r++) {
         draw_mine_row(self, r);
     }
     draw_mine_row(self, self->board->rows + (self->board->num_rows-1));
-    draw_bottom_row(self);
-
+    if(opts.border){
+        draw_bottom_row(self);
+    }
     if (self->debug) {
         wprintw(self->win, "(%d, %d)\n", self->user_x, self->user_y);
         wprintw(self->win, "Cell Type: %s\n", str_cell_type[cursor->type]);
@@ -43,7 +46,9 @@ void print_revealed_cell(struct board_window *self, struct cell *c);
 void draw_mine_row(struct board_window *self, struct row *r) {
 
     struct cell *c;
-    wprintw(self->win, "%s", "│");
+    if(opts.border){
+        wprintw(self->win, "%s", "│");
+    }
     for (c = r->cells; c < r->cells + self->board->num_cols; c++) {
         if (c->should_highlight) {
             wattron(self->win, A_STANDOUT);
@@ -54,7 +59,11 @@ void draw_mine_row(struct board_window *self, struct row *r) {
         }
     }
 
-    wprintw(self->win, "%s\n", "│");
+    if(opts.border){
+        wprintw(self->win, "%s\n", "│");
+    }else{
+        wprintw(self->win, "\n");
+    }
 }
 
 void print_cell(struct board_window *self, struct cell *c) {

@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include "board.h"
 #include "stopwatch.h"
+#include "options.h"
 
 typedef enum {UP, DOWN, LEFT, RIGHT} direction;
 typedef enum {NORMAL, RED, GRAY, WHITE} draw_status;

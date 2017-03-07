@@ -32,6 +32,7 @@ const char USAGE[] =
     "\n"
     "Mandatory arguments for long options are mandatory for short ones too\n"
     " -b,   --beginner..........play beginner board\n"
+    " -B,   --border............do not draw the pretty border\n"
     " -c,   --cols=SIZE.........specify the number of columns\n"
     " -d,   --debug.............turn debug mode on\n"
     " -e,   --expert............play expert board\n"
@@ -62,6 +63,7 @@ struct options get_cmdline(int argc, char **argv) {
     
     static struct option long_options[] = {
         {"beginner",     no_argument,       NULL, 'b'},
+        {"border",       no_argument,       NULL, 'B'},
         {"cols",         required_argument, NULL, 'c'},
         {"debug",        no_argument,       NULL, 'd'},
         {"expert",       no_argument,       NULL, 'e'},
@@ -72,41 +74,44 @@ struct options get_cmdline(int argc, char **argv) {
         {0,              0,                 0,    0}
     };
 
-    struct options ret;
-    ret.cols = 30;
-    ret.rows = 16;
-    ret.mines = 99;
-    ret.debug = 0;
-    ret.error = 0;
+    opts.cols = 30;
+    opts.rows = 16;
+    opts.mines = 99;
+    opts.debug = 0;
+    opts.error = 0;
+    opts.border = 1;
 
     int have_set_difficulty = 0;
     int flag_char = 0;
     int option_index = 0;
-    while ((flag_char = getopt_long(argc, argv, "bc:deihm:r:", long_options,
+    while ((flag_char = getopt_long(argc, argv, "bBc:deihm:r:", long_options,
                                     &option_index)) != EOF) {
         switch (flag_char) {
         case '\0':
             break;
         case 'b':
             have_set_difficulty = 1;
-            ret.cols = 8;
-            ret.rows = 8;
-            ret.mines = 10;
+            opts.cols = 8;
+            opts.rows = 8;
+            opts.mines = 10;
+            break;
+        case 'B':
+            opts.border = 0;
             break;
         case 'i':
             have_set_difficulty = 1;
-            ret.cols = 16;
-            ret.rows = 16;
-            ret.mines = 40;
+            opts.cols = 16;
+            opts.rows = 16;
+            opts.mines = 40;
             break;
         case 'e':
             have_set_difficulty = 1;
-            ret.cols = 30;
-            ret.rows = 16;
-            ret.mines = 99;
+            opts.cols = 30;
+            opts.rows = 16;
+            opts.mines = 99;
             break;
         case 'd':
-            ret.debug = 1;
+            opts.debug = 1;
             break;
         case 'r':
             if (!have_set_difficulty) {
@@ -116,9 +121,9 @@ struct options get_cmdline(int argc, char **argv) {
                     fprintf(stderr,
                             "%s: -%c only takes positive integer arguments\n",
                             argv[0], flag_char);
-                    ret.error = 1;
+                    opts.error = 1;
                 } else {
-                    ret.rows = result;
+                    opts.rows = result;
                 }
             }
             break;
@@ -130,9 +135,9 @@ struct options get_cmdline(int argc, char **argv) {
                     fprintf(stderr,
                             "%s: -%c only takes positive integer arguments\n",
                             argv[0], flag_char);
-                    ret.error = 1;
+                    opts.error = 1;
                 } else {
-                    ret.cols = result;
+                    opts.cols = result;
                 }
             }
             break;
@@ -144,9 +149,9 @@ struct options get_cmdline(int argc, char **argv) {
                     fprintf(stderr,
                             "%s: -%c only takes positive integer arguments\n",
                             argv[0], flag_char);
-                    ret.error = 1;
+                    opts.error = 1;
                 } else {
-                    ret.mines = result;
+                    opts.mines = result;
                 }
             }
             break;
@@ -154,7 +159,7 @@ struct options get_cmdline(int argc, char **argv) {
             fputs(USAGE, stdout);
             exit(EXIT_SUCCESS); 
         case '?':
-            ret.error = 1;
+            opts.error = 1;
             break;
         default:
             exit(1);
@@ -164,11 +169,11 @@ struct options get_cmdline(int argc, char **argv) {
 
     // TODO: Move this constant somewhere else
     const int NUM_TILES_CANT_BE_MINE = 5*5;
-    if (ret.rows * ret.cols - NUM_TILES_CANT_BE_MINE < ret.mines) {
-        ret.error = 2;
+    if (opts.rows * opts.cols - NUM_TILES_CANT_BE_MINE < opts.mines) {
+        opts.error = 2;
     }
 
-    return ret;
+    return opts;
 }
 
 int parse_int(const char *optarg, const char flag_char) {
